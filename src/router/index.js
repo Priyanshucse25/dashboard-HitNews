@@ -1,12 +1,23 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import Dashboard from '@/views/Dashboard.vue'
+import Dashboard from '@/Layout/Dashboard.vue'
 import HomeView from '@/views/HomeView.vue'
-import CategoryPage from '@/views/CategoryPage.vue' // make sure this file exists
+// import LogSign from '@/Layout/LogSign.vue'
+import Signup from '@/views/Signup.vue'
+import Login from '@/views/Login.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    {
+      path: '/login',
+      component: Login // Default redirect to login
+    },
+    {
+      path: '/signup',
+      name: 'SignUp',
+      component: Signup
+    },
     {
       path: '/',
       name: 'dashboard',
@@ -15,15 +26,13 @@ const router = createRouter({
         {
           path: '',
           name: 'homeView',
-          component: HomeView,
+          component: HomeView
         },
         {
-          path: '/category/:name',
+          path: 'category/:name',
           name: 'CategoryPage',
-          component: () => import('@/views/CategoryPage.vue') // whatever the file is
+          component: () => import('@/views/CategoryPage.vue')
         }
-        
-        
       ]
     }
   ]

@@ -1,97 +1,312 @@
 <template>
-  <div class="p-6">
+  <div class="p-6 h-full flex flex-col">
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
-      <h2 class="text-2xl font-bold text-[#B48D3E]">Category: {{ categoryName }}</h2>
-
-      <button
-        @click="showModal = true"
-        class="bg-[#B48D3E] text-white px-4 py-2 rounded hover:opacity-90"
-      >
-        Add Content
-      </button>
+      
+      <h2 class="text-2xl font-bold text-[#B48D3E]">
+        Category: {{ categoryName }}
+      </h2>
+      <div class="flex gap-2">
+        <button
+          @click="showModal = true"
+          class="bg-[#B48D3E] text-white px-4 py-2 rounded hover:opacity-90"
+        >
+          Add Content
+        </button>
+        <button
+          @click="toggleBanner"
+          class="bg-[#B48D3E] text-white px-4 py-2 rounded hover:opacity-90"
+        >
+          Banner
+        </button>
+      </div>
     </div>
 
-    <!-- Cards Section -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <div
-        v-for="(item, index) in contentList"
-        :key="index"
-        class="bg-white rounded-xl p-4 shadow text-[#B48D3E]"
-      >
-        <h3 class="font-bold text-lg">{{ item.title }}</h3>
-        <img
-          :src="item.image"
-          alt="Content image"
-          class="h-40 w-full object-cover my-2 rounded"
-        />
-        <p class="text-sm" v-html="item.description"></p>
+    <!-- Banner Section -->
+    <div
+      v-if="showBanners"
+      class="bg-gray-100 p-4 rounded-lg mb-6 max-h-[500px] overflow-y-auto"
+    >
+      <h3 class="text-xl font-bold text-[#B48D3E] mb-4">Banners</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div
+          v-for="(banner, index) in banners"
+          :key="banner._id || index"
+          class="bg-white rounded-lg shadow p-4"
+        >
+          <img
+            :src="banner.image"
+            alt="Banner"
+            class="h-40 w-full object-cover rounded"
+          />
+          <p class="mt-2 text-sm">{{ banner.link }}</p>
 
-        <div class="flex justify-end gap-2 mt-2">
-          <button @click="editCard(index)" class="text-sm text-blue-500">Edit</button>
-          <button @click="deleteCard(index)" class="text-sm text-red-500">Delete</button>
+          <div class="flex gap-2 mt-2">
+            <button
+              @click="openEditBannerModal(banner)"
+              class="text-sm text-[#B48D3E] hover:text-green-600"
+            >
+              Edit
+            </button>
+            <button
+              @click="openDeleteBannerModal(banner)"
+              class="text-sm text-red-600 hover:text-red-800"
+            >
+              Delete
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Add/Edit Modal -->
+    <!-- Cards Section -->
+    <div class="flex-1 overflow-y-auto p-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div
+          v-for="(item, index) in paginatedContent"
+          :key="item._id"
+          @click="toggleCard(item)"
+          class="bg-white rounded-xl p-4 shadow text-[#B48D3E] cursor-pointer transition-all duration-300 ease-in-out"
+          :class="
+            selectedCardId === item._id
+              ? 'max-h-full'
+              : 'max-h-[400px] overflow-hidden'
+          "
+        >
+          <div>
+            <h3
+              class="font-bold text-lg"
+              :class="selectedCardId === item._id ? '' : 'line-clamp-2'"
+            >
+              {{ item.title }}
+            </h3>
+
+            <img
+              :src="item.image"
+              alt="Content image"
+              class="h-40 w-full object-cover my-2 rounded"
+            />
+
+            <p
+              class="text-sm text-gray-600"
+              :class="selectedCardId === item._id ? '' : 'line-clamp-3'"
+              v-html="item.content"
+            ></p>
+          </div>
+
+          <div class="mt-2">
+            <div class="text-sm italic mb-2">
+              {{ item.category?.name || item.category || "No Category" }}
+            </div>
+
+            <div class="flex justify-end gap-2">
+              <button
+                @click.stop="editCard(item)"
+                class="text-sm text-blue-500 hover:underline"
+              >
+                Edit
+              </button>
+              <button
+                @click.stop="deleteCard(item)"
+                class="text-sm text-red-500 hover:underline"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-4 flex justify-center gap-2">
+      <button
+        @click="changePage(page - 1)"
+        :disabled="page === 1"
+        class="px-3 py-1 rounded border text-[#B48D3E] border-[#B48D3E] hover:bg-[#B48D3E] hover:text-white disabled:opacity-50"
+      >
+        Prev
+      </button>
+      <button
+        v-for="p in totalPages"
+        :key="p"
+        @click="changePage(p)"
+        :class="[
+          page === p
+            ? 'bg-[#B48D3E] text-white'
+            : 'text-[#B48D3E] border-[#B48D3E] hover:bg-[#B48D3E] hover:text-white',
+          'px-3 py-1 rounded border',
+        ]"
+      >
+        {{ p }}
+      </button>
+      <button
+        @click="changePage(page + 1)"
+        :disabled="page === totalPages"
+        class="px-3 py-1 rounded border text-[#B48D3E] border-[#B48D3E] hover:bg-[#B48D3E] hover:text-white disabled:opacity-50"
+      >
+        Next
+      </button>
+    </div>
+
+    <!-- Add/Edit Content Modal -->
     <div
       v-if="showModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-auto"
     >
-      <div class="bg-white p-6 rounded shadow w-96 max-h-[90vh] overflow-y-auto">
-        <h2 class="text-xl font-semibold mb-4 text-[#B48D3E]">
-          {{ editingIndex !== null ? 'Edit' : 'Add' }} Content
-        </h2>
+      <div
+        class="bg-white p-6 rounded-xl w-full max-w-lg max-h-[600px] text-[#B48D3E] relative overflow-auto"
+      >
+        <h3 class="text-xl font-bold mb-4">
+          {{ editingIndex !== null ? "Edit Content" : "Add Content" }}
+        </h3>
 
-        <!-- Category Dropdown -->
-        <select
-          v-model="form.category"
-          class="w-full border p-2 rounded mb-2"
-        >
-          <option disabled value="">Select Category</option>
-          <option
-            v-for="category in categories"
-            :key="category"
-            :value="category"
-          >
-            {{ category }}
-          </option>
-        </select>
-
+        <label class="block mb-2">Title</label>
         <input
           v-model="form.title"
           type="text"
-          placeholder="Title"
-          class="w-full border p-2 rounded mb-2"
-        />
-        <input
-          type="file"
-          accept="image/*"
-          @change="handleImage"
-          class="w-full mb-2"
+          class="w-full px-4 py-2 border rounded mb-4"
         />
 
-        <!-- ✅ Rich Text Editor for Description -->
-        <div class="w-full border p-2 rounded mb-4">
-          <QuillEditor
-            v-model:content="form.description"
-            contentType="html"
-            theme="snow"
-            placeholder="Write description..."
-            class="min-h-[120px]"
+        <label class="block mb-2">Image</label>
+        <input type="file" @change="handleImage" class="w-full mb-4" />
+
+        <label class="block mb-2 overflow-x-auto">Content</label>
+        <QuillEditor
+          v-model:content="form.content"
+          contentType="html"
+          theme="snow"
+          class="mb-4"
+         
+        />
+
+        <label class="block mb-2">Category</label>
+        <div class="relative mb-4" ref="categoryDropdownRef">
+          <input
+            v-model="searchQuery"
+            @focus="showCategoryList = true"
+            placeholder="Search Category"
+            class="w-full px-4 py-2 border rounded"
           />
+          <ul
+            v-if="showCategoryList"
+            class="absolute bg-white border w-full mt-1 z-10 rounded max-h-40 overflow-y-auto shadow"
+          >
+            <li
+              v-for="(cat, index) in filteredCategories"
+              :key="index"
+              @click.prevent="selectCategory(cat)"
+              class="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+            >
+              {{ cat }}
+            </li>
+          </ul>
         </div>
 
         <div class="flex justify-end gap-2">
-          <button @click="cancelEdit" class="bg-gray-300 px-4 py-2 rounded">
+          <button
+            @click="cancelEdit"
+            class="px-4 py-2 border border-[#B48D3E] rounded text-[#B48D3E] hover:bg-[#B48D3E] hover:text-white"
+          >
             Cancel
           </button>
           <button
             @click="saveContent"
+            class="px-4 py-2 bg-[#B48D3E] text-white rounded hover:opacity-90"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Banner Modal -->
+    <div
+      v-if="isEditBannerModalVisible"
+      class="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center"
+    >
+      <div class="bg-white p-6 rounded-lg max-w-md w-full">
+        <h3 class="text-xl font-bold text-[#B48D3E] mb-4">Edit Banner</h3>
+
+        <label for="image" class="block text-sm mb-1">Banner Image</label>
+        <input
+          type="file"
+          id="image"
+          @change="handleBannerImageChange"
+          class="mb-4 w-full"
+        />
+
+        <label for="link" class="block text-sm mb-1">Banner Link</label>
+        <input
+          v-model="currentBannerToEdit.link"
+          type="text"
+          id="link"
+          class="mb-4 p-2 border border-gray-300 rounded w-full"
+        />
+
+        <div class="flex justify-end space-x-2">
+          <button
+            @click="closeEditBannerModal"
+            class="bg-gray-400 text-white px-4 py-2 rounded"
+          >
+            Cancel
+          </button>
+          <button
+            @click="saveBanner"
             class="bg-[#B48D3E] text-white px-4 py-2 rounded"
           >
-            {{ editingIndex !== null ? 'Update' : 'Save' }}
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Banner Confirmation Modal -->
+    <div
+      v-if="isDeleteBannerModalVisible"
+      class="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center"
+    >
+      <div class="bg-white p-6 rounded-lg max-w-md w-full">
+        <h3 class="text-xl font-bold text-red-600 mb-4">Are you sure?</h3>
+        <p class="mb-4">Do you want to delete this banner?</p>
+
+        <div class="flex justify-end space-x-2">
+          <button
+            @click="closeDeleteBannerModal"
+            class="bg-gray-400 text-white px-4 py-2 rounded"
+          >
+            Cancel
+          </button>
+          <button
+            @click="confirmDeleteBanner()"
+            class="bg-red-600 text-white px-4 py-2 rounded"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div
+      v-if="showDeleteModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div class="bg-white p-6 rounded-lg w-full max-w-md text-[#B48D3E]">
+        <h3 class="text-xl font-bold mb-4">Are you sure?</h3>
+        <p class="mb-4">Do you want to delete this content?</p>
+        <div class="flex justify-end gap-2">
+          <button
+            @click="cancelDelete"
+            class="px-4 py-2 border border-[#B48D3E] rounded text-[#B48D3E] hover:bg-[#B48D3E] hover:text-white"
+          >
+            Cancel
+          </button>
+          <button
+            @click="confirmDelete(banner)"
+            class="px-4 py-2 bg-red-600 text-white rounded hover:opacity-90"
+          >
+            Delete
           </button>
         </div>
       </div>
@@ -100,119 +315,355 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue'
-import { useRoute } from 'vue-router'
-import { useCategoryStore } from '@/stores/categoryStore'
-import axios from 'axios'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
+import { useRoute } from "vue-router";
+import { QuillEditor } from "@vueup/vue-quill";
+import "@vueup/vue-quill/dist/vue-quill.snow.css";
+import { useCategoryStore } from "@/stores/categoryStore";
+import axios from "axios";
 
-// ✅ Rich Text Editor
-import { QuillEditor } from '@vueup/vue-quill'
-import '@vueup/vue-quill/dist/vue-quill.snow.css'
+// Refs & States
+const route = useRoute();
+const categoryName = ref(decodeURIComponent(route.params.name || ""));
+const categoryStore = useCategoryStore();
 
-const route = useRoute()
+const allContent = ref([]);
+const banners = ref([]);
+const showModal = ref(false);
+const showDeleteModal = ref(false);
+const showEditModal = ref(false);
+const indexToDelete = ref(null);
+const editingIndex = ref(null);
+const form = ref({ title: "", image: "", content: "", category: "" });
+const searchQuery = ref("");
+const showCategoryList = ref(false);
+const categoryDropdownRef = ref(null);
 
-const categoryName = ref(decodeURIComponent(route.params.name || ''))
+// Banners
+// const isBannersVisible = ref(false);
+const isEditBannerModalVisible = ref(false);
+const isDeleteBannerModalVisible = ref(false);
+const currentBannerToEdit = ref({ image: "", link: "" });
+const bannerToDeleteId = ref(null);
+
+const showBanners = ref(false);
+
+// Computed
+const categories = computed(() => categoryStore.categories.map((c) => c.name));
+const filteredCategories = computed(() => {
+  const query = searchQuery.value.toLowerCase();
+  return categories.value.filter((cat) => cat.toLowerCase().includes(query));
+});
+
+const selectedCardId = ref(null);
+
+function toggleCard(item) {
+  selectedCardId.value = selectedCardId.value === item._id ? null : item._id;
+}
+
+// Watch route param
 watch(
   () => route.params.name,
-  (newName) => {
-    categoryName.value = decodeURIComponent(newName || '')
+  (newVal) => {
+    categoryName.value = decodeURIComponent(newVal || "");
+    page.value = 1;
   }
-)
+);
 
-const categoryStore = useCategoryStore()
-const categories = computed(() => categoryStore.categories.map(c => c.name))
 
-const allContent = ref([])
+// Category Dropdown
+const selectCategory = (cat) => {
+  form.value.category = cat;
+  searchQuery.value = cat;
+  showCategoryList.value = false;
+};
 
-const contentList = computed(() =>
-  allContent.value.filter(item => item.category === categoryName.value)
-)
-
-const showModal = ref(false)
-const editingIndex = ref(null)
-
-const getPost = async () => {
-   try{
-    const response = await axios.get('http://192.168.31.33:3000/post')
-    allContent.value = response.data.map(item => ({
-      ...item,
-    }))
-  } catch (error) {
-    console.error('Error fetching posts:', error)
+// Fetch content and banners
+const fetchContent = async () => {
+  try {
+    const res = await axios.get("http://192.168.1.4:5000/api/news", {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    
+    allContent.value = res.data.newsArticles || [];
+   
+  } catch (err) {
+    console.error("Fetch error:", err);
   }
-}
-getPost()
+};
 
-const form = ref({
-  title: '',
-  image: '',
-  description: '',
-  category: '',
-})
+const fetchBanners = async () => {
+  try {
+    const res = await axios.get("http://192.168.1.4:5000/api/banner", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    });
 
-function handleImage(event) {
-  const file = event.target.files[0]
-  if (file) {
-    const reader = new FileReader()
-    reader.onload = () => {
-      form.value.image = reader.result
-    }
-    reader.readAsDataURL(file)
+    banners.value = res.data.info || [];
+    console.log(banners.value);
+
+  } catch (err) {
+    console.error("Fetch error:", err.response?.data || err.message);
   }
-}
+};
 
-function saveContent() {
+
+// Save Content (Add / Edit)
+const saveContent = async () => {
   if (!form.value.category) {
-    alert('Please select a category.')
-    return
+    alert("Please select a category.");
+    return;
   }
 
-  if (editingIndex.value !== null) {
-    allContent.value[editingIndex.value] = { ...form.value }
-  } else {
-    allContent.value.push({ ...form.value })
+  try {
+    const formData = new FormData();
+    formData.append("title", form.value.title);
+    formData.append("content", form.value.content);
+    formData.append("category", form.value.category);
+
+    if (form.value.image && typeof form.value.image !== "string") {
+      formData.append("image", form.value.image);
+    }
+
+    const config = {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    };
+
+    if (editingIndex.value !== null) {
+      const id = allContent.value[editingIndex.value]._id;
+      const { data } = await axios.put(
+        `http://192.168.1.4:5000/api/news/editnews/${id}`,
+        formData,
+        config
+      );
+      allContent.value.splice(editingIndex.value, 1, data);
+    } else {
+      await axios.post(
+        "http://192.168.1.4:5000/api/news",
+        formData,
+        config
+      );
+    }
+    await fetchContent();
+    resetForm();
+    page.value = 1;
+  } catch (err) {
+    console.error("Save error:", err);
   }
-  resetForm()
-}
+};
 
-function editCard(index) {
-  const currentItems = contentList.value
-  const itemToEdit = currentItems[index]
-  const globalIndex = allContent.value.findIndex(
-    (item) => item === itemToEdit
-  )
-
-  if (globalIndex !== -1) {
-    editingIndex.value = globalIndex
-    form.value = { ...allContent.value[globalIndex] }
-    showModal.value = true
+// Toggle Banner
+const toggleBanner = () => {
+  showBanners.value = !showBanners.value;
+  if (showBanners.value) {
+    fetchBanners();
   }
-}
+};
 
-function deleteCard(index) {
-  const currentItems = contentList.value
-  const itemToDelete = currentItems[index]
-  const globalIndex = allContent.value.findIndex(
-    (item) => item === itemToDelete
-  )
+const handleImage = (e) => {
+  const file = e.target.files[0];
+  if (file) form.value.image = file;
+};
 
-  if (globalIndex !== -1) {
-    allContent.value.splice(globalIndex, 1)
-  }
-}
-
-function cancelEdit() {
-  resetForm()
-}
-
-function resetForm() {
-  showModal.value = false
-  editingIndex.value = null
+// Edit / Delete content
+const editCard = (item) => {
+  const index = allContent.value.findIndex((i) => i._id === item._id);
+  editingIndex.value = index;
   form.value = {
-    title: '',
-    image: '',
-    description: '',
-    category: '',
+    title: item.title,
+    image: item.image,
+    content: item.content,
+    category: item.category?.name || item.category || "",
+  };
+  searchQuery.value = form.value.category;
+  showModal.value = true;
+};
+
+const deleteCard = (item) => {
+  indexToDelete.value = item._id;
+  showDeleteModal.value = true;
+};
+
+const confirmDelete = async () => {
+  try {
+    await axios.delete(
+      `http://192.168.1.4:5000/api/news/deletenews/${indexToDelete.value}`,
+      {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+      }
+    )
+    allContent.value = allContent.value.filter(
+      (item) => item._id !== indexToDelete.value
+    );
+    showDeleteModal.value = false;
+    indexToDelete.value = null;
+  } catch (err) {
+    console.error("Delete error:", err);
   }
-}
+};
+
+const cancelDelete = () => {
+  showDeleteModal.value = false;
+  indexToDelete.value = null;
+};
+
+const cancelEdit = () => resetForm();
+
+const resetForm = () => {
+  showModal.value = false;
+  editingIndex.value = null;
+  form.value = { title: "", image: "", content: "", category: "" };
+  searchQuery.value = "";
+};
+
+// Pagination
+const page = ref(1);
+const perPage = 12;
+
+const filteredContent = computed(() => {
+  if (categoryName.value.toLowerCase() === "all") return allContent.value;
+  return allContent.value.filter((item) => {
+    const cat =
+      typeof item.category === "object" ? item.category.name : item.category;
+    return cat?.toLowerCase() === categoryName.value.toLowerCase();
+  });
+});
+
+const totalPages = computed(() =>
+  Math.ceil(filteredContent.value.length / perPage)
+);
+const paginatedContent = computed(() => {
+  const start = (page.value - 1) * perPage;
+  return filteredContent.value.slice(start, start + perPage);
+});
+const changePage = (newPage) => {
+  if (newPage >= 1 && newPage <= totalPages.value) page.value = newPage;
+};
+
+// Dropdown click-outside close
+const handleClickOutside = (event) => {
+  setTimeout(() => {
+    if (
+      categoryDropdownRef.value &&
+      !categoryDropdownRef.value.contains(event.target)
+    ) {
+      showCategoryList.value = false;
+    }
+  }, 0);
+};
+
+// ---------------------------
+//        BANNER FUNCTIONS
+// ---------------------------
+
+// // Toggle banner visibility
+// const toggleBannersVisibility = () => {
+//   isBannersVisible.value = !isBannersVisible.value;
+// };
+
+// Open edit banner modal
+const openEditBannerModal = (banner) => {
+  currentBannerToEdit.value = { ...banner };
+  isEditBannerModalVisible.value = true; // Set to true to show the edit modal
+};
+
+// Close edit modal
+const closeEditBannerModal = () => {
+  isEditBannerModalVisible.value = false; // Set to false to close the edit modal
+  currentBannerToEdit.value = { image: "", link: "", _id: "" };
+};
+
+// Save banner edit
+const saveBanner = async () => {
+  try {
+    const formData = new FormData();
+    if (currentBannerToEdit.value.image instanceof File) {
+      formData.append("image", currentBannerToEdit.value.image);
+    }
+    formData.append("link", currentBannerToEdit.value.link);
+
+    const response = await axios.put(
+      `http://192.168.1.4:5000/api/banner/${currentBannerToEdit.value._id}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      }
+    );
+
+    console.log("Banner updated successfully:", response.data);
+    await fetchBanners();
+    closeEditBannerModal();
+  } catch (error) {
+    console.error("Error updating banner:", error);
+  }
+};
+
+// Open delete banner modal
+const openDeleteBannerModal = (banner) => {
+  bannerToDeleteId.value = banner?._id;
+  isDeleteBannerModalVisible.value = true; // Set to true to show the delete modal
+};
+
+// Close delete modal
+const closeDeleteBannerModal = () => {
+  bannerToDeleteId.value = null;
+  isDeleteBannerModalVisible.value = false; // Set to false to close the delete modal
+};
+
+// Delete banner
+const confirmDeleteBanner = async () => {
+  console.log(bannerToDeleteId.value);
+  if (bannerToDeleteId.value && bannerToDeleteId.value) {
+    try {
+      await axios.delete(
+        `http://192.168.1.4:5000/api/banner/${bannerToDeleteId.value}`,
+        {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+      }
+      );
+
+      console.log("Banner deleted successfully");
+      await fetchBanners();
+      closeDeleteBannerModal();
+    } catch (error) {
+      console.error("Error deleting banner:", error);
+    }
+  } else {
+    console.error("Banner ID is undefined or missing");
+  }
+};
+
+
+onMounted(() => {
+  fetchContent();
+  document.addEventListener("click", handleClickOutside);
+});
+onBeforeUnmount(() => {
+  document.removeEventListener("click", handleClickOutside);
+});
 </script>
+
+<style scoped>
+/* Optional: Custom scroll styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #b48d3e;
+  border-radius: 4px;
+}
+</style>
+
+
