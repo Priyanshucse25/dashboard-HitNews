@@ -5,7 +5,9 @@
     <div
       class="w-full max-w-md p-8 bg-white dark:bg-gray-800 shadow-2xl rounded-3xl transition-all duration-300"
     >
-      <h1 class="text-4xl font-extrabold mb-8 text-center text-emerald-600 dark:text-emerald-400">
+      <h1
+        class="text-4xl font-extrabold mb-8 text-center text-emerald-600 dark:text-emerald-400"
+      >
         Welcome Back
       </h1>
       <form @submit.prevent="handleLogin" class="space-y-6">
@@ -24,8 +26,9 @@
             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
             placeholder="Enter your username"
           />
-          <p v-if="errors.username" class="text-red-500 text-xs mt-1">{{ errors.username }}</p>
-          
+          <p v-if="errors.username" class="text-red-500 text-xs mt-1">
+            {{ errors.username }}
+          </p>
         </div>
 
         <!-- Password -->
@@ -44,8 +47,9 @@
             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
             placeholder="••••••••"
           />
-          <p v-if="errors.password" class="text-red-500 text-xs mt-1">{{ errors.password }}</p>
-         
+          <p v-if="errors.password" class="text-red-500 text-xs mt-1">
+            {{ errors.password }}
+          </p>
         </div>
 
         <!-- Forgot Password -->
@@ -71,7 +75,10 @@
         <!-- Sign Up Inline -->
         <div class="text-center text-sm text-gray-600 dark:text-gray-400">
           Don't have an account?
-          <button @click="openSignup" class="text-violet-600 font-semibold hover:underline ml-1">
+          <button
+            @click="openSignup"
+            class="text-violet-600 font-semibold hover:underline ml-1"
+          >
             Sign Up
           </button>
         </div>
@@ -81,88 +88,91 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
-import axios from 'axios'
-import { useCategoryStore } from '@/stores/categoryStore'
-import { storeToRefs } from 'pinia'
+import { ref, reactive } from "vue";
+import { useRouter } from "vue-router";
+import axios from "axios";
+import { useCategoryStore } from "@/stores/categoryStore";
+import { storeToRefs } from "pinia";
 
-const router = useRouter()
-const username = ref('')
-const password = ref('')
+const router = useRouter();
+const username = ref("");
+const password = ref("");
 
-const categoryStore = useCategoryStore()
-const {banners , categories} = storeToRefs(categoryStore)
-
-
+const categoryStore = useCategoryStore();
+const { banners, categories } = storeToRefs(categoryStore);
 
 const errors = reactive({
-  username: '',
-  password: '',
-})
+  username: "",
+  password: "",
+});
 
-console.log(errors.username)
 const handleLogin = async () => {
-  errors.username = ''
-  errors.password = ''
+  errors.username = "";
+  errors.password = "";
 
-  let valid = true
+  let valid = true;
 
   if (!username.value) {
-    errors.username = 'Username is required.'
-    valid = false
+    errors.username = "Username is required.";
+    valid = false;
   }
 
   if (!password.value) {
-    errors.password = 'Password is required.'
-    valid = false
+    errors.password = "Password is required.";
+    valid = false;
   }
 
   if (valid) {
     try {
-      // ❌ Removed unnecessary token from headers here
-      const response = await axios.post('http://192.168.1.4:5000/api/auth/login', {
-        username: username.value,
-        password: password.value,
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await axios.post(
+        "https://backend-owra.onrender.com/api/auth/login",
+        {
+          username: username.value,
+          password: password.value,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
-      })
+      );
 
       if (response.status === 200) {
-        console.log('Login successful:', response.data)
-
-        const { token, username: nameFromServer, categories: fetchedCategories, banners: fetchedBanners } = response.data
-
-        // ✅ Save token and user info in localStorage
-        localStorage.setItem('token', token)
-        localStorage.setItem('user', JSON.stringify({
+        const {
+          token,
           username: nameFromServer,
-          token: token,
-          createdAt: new Date().toISOString(),
-        }))
+          categories: fetchedCategories,
+          banners: fetchedBanners,
+        } = response.data;
 
-        // ✅ Sync data with Pinia store
-        categories.value = fetchedCategories || []
-        banners.value = fetchedBanners || []
+        // ✅ Save token using consistent key
+        localStorage.setItem("token", token);
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            username: nameFromServer,
+            token: token,
+            createdAt: new Date().toISOString(),
+          })
+        );
+
+        categories.value = fetchedCategories || [];
+        banners.value = fetchedBanners || [];
 
         // ✅ Redirect to dashboard
-        router.push('/')
+        await router.push("/");
       }
     } catch (error) {
-      console.error('Login failed:', error.response?.data?.message || error.message)
-      alert('Login failed. Please check your username and password.')
+      console.error(
+        "Login failed:",
+        error.response?.data?.message || error.message
+      );
+      alert("Login failed. Please check your username and password.");
     }
   }
-}
+};
 
 const openSignup = () => {
-  router.push('/signup')
-}
-
-const user = JSON.parse(localStorage.getItem('user'))
-if (!user) {
-  router.push('/login') // or '/signup'
-}
+  router.push("/signup");
+};
 </script>

@@ -2,7 +2,6 @@
   <div class="p-6 h-full flex flex-col">
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
-      
       <h2 class="text-2xl font-bold text-[#B48D3E]">
         Category: {{ categoryName }}
       </h2>
@@ -177,7 +176,6 @@
           contentType="html"
           theme="snow"
           class="mb-4"
-         
         />
 
         <label class="block mb-2">Category</label>
@@ -229,12 +227,7 @@
         <h3 class="text-xl font-bold text-[#B48D3E] mb-4">Edit Banner</h3>
 
         <label for="image" class="block text-sm mb-1">Banner Image</label>
-        <input
-          type="file"
-          id="image"
-          @change="handleBannerImageChange"
-          class="mb-4 w-full"
-        />
+        <input type="file" @change="handleFileChange" accept="image/*" />
 
         <label for="link" class="block text-sm mb-1">Banner Link</label>
         <input
@@ -355,6 +348,13 @@ const filteredCategories = computed(() => {
   return categories.value.filter((cat) => cat.toLowerCase().includes(query));
 });
 
+const handleFileChange = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    currentBannerToEdit.value.newFile = file;
+  }
+};
+
 const selectedCardId = ref(null);
 
 function toggleCard(item) {
@@ -370,7 +370,6 @@ watch(
   }
 );
 
-
 // Category Dropdown
 const selectCategory = (cat) => {
   form.value.category = cat;
@@ -381,15 +380,14 @@ const selectCategory = (cat) => {
 // Fetch content and banners
 const fetchContent = async () => {
   try {
-    const res = await axios.get("http://192.168.1.4:5000/api/news", {
+    const res = await axios.get("https://backend-owra.onrender.com/api/news", {
       headers: {
         "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
     });
-    
+
     allContent.value = res.data.newsArticles || [];
-   
   } catch (err) {
     console.error("Fetch error:", err);
   }
@@ -397,20 +395,21 @@ const fetchContent = async () => {
 
 const fetchBanners = async () => {
   try {
-    const res = await axios.get("http://192.168.1.4:5000/api/banner", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
+    const res = await axios.get(
+      "https://backend-owra.onrender.com/api/banner",
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       }
-    });
+    );
 
     banners.value = res.data.info || [];
     console.log(banners.value);
-
   } catch (err) {
     console.error("Fetch error:", err.response?.data || err.message);
   }
 };
-
 
 // Save Content (Add / Edit)
 const saveContent = async () => {
@@ -432,21 +431,21 @@ const saveContent = async () => {
     const config = {
       headers: {
         "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
     };
 
     if (editingIndex.value !== null) {
       const id = allContent.value[editingIndex.value]._id;
       const { data } = await axios.put(
-        `http://192.168.1.4:5000/api/news/editnews/${id}`,
+        `https://backend-owra.onrender.com/api/news/editnews/${id}`,
         formData,
         config
       );
       allContent.value.splice(editingIndex.value, 1, data);
     } else {
       await axios.post(
-        "http://192.168.1.4:5000/api/news",
+        "https://backend-owra.onrender.com/api/news",
         formData,
         config
       );
@@ -494,12 +493,11 @@ const deleteCard = (item) => {
 const confirmDelete = async () => {
   try {
     await axios.delete(
-      `http://192.168.1.4:5000/api/news/deletenews/${indexToDelete.value}`,
+      `https://backend-owra.onrender.com/api/news/deletenews/${indexToDelete.value}`,
       {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}`
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       }
-      }
-    )
+    );
     allContent.value = allContent.value.filter(
       (item) => item._id !== indexToDelete.value
     );
@@ -571,9 +569,19 @@ const handleClickOutside = (event) => {
 
 // Open edit banner modal
 const openEditBannerModal = (banner) => {
-  currentBannerToEdit.value = { ...banner };
-  isEditBannerModalVisible.value = true; // Set to true to show the edit modal
+  currentBannerToEdit.value = {
+    _id: banner._id,
+    link: banner.link,
+    image: banner.image, // URL for preview
+    newFile: null, // new file for upload
+  };
+  isEditBannerModalVisible.value = true;
 };
+
+// const openEditBannerModal = (banner) => {
+//   currentBannerToEdit.value = { ...banner }
+//   isEditBannerModalVisible.value = true // Set to true to show the edit modal
+// }
 
 // Close edit modal
 const closeEditBannerModal = () => {
@@ -582,21 +590,24 @@ const closeEditBannerModal = () => {
 };
 
 // Save banner edit
+
 const saveBanner = async () => {
   try {
     const formData = new FormData();
-    if (currentBannerToEdit.value.image instanceof File) {
-      formData.append("image", currentBannerToEdit.value.image);
+
+    if (currentBannerToEdit.value.newFile instanceof File) {
+      formData.append("image", currentBannerToEdit.value.newFile);
     }
+
     formData.append("link", currentBannerToEdit.value.link);
 
     const response = await axios.put(
-      `http://192.168.1.4:5000/api/banner/${currentBannerToEdit.value._id}`,
+      `https://backend-owra.onrender.com/api/banner/${currentBannerToEdit.value._id}`,
       formData,
       {
         headers: {
           "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       }
     );
@@ -608,6 +619,33 @@ const saveBanner = async () => {
     console.error("Error updating banner:", error);
   }
 };
+
+// const saveBanner = async () => {
+//   try {
+//     const formData = new FormData()
+//     if (currentBannerToEdit.value.image instanceof File) {
+//       formData.append('image', currentBannerToEdit.value.image)
+//     }
+//     formData.append('link', currentBannerToEdit.value.link)
+
+//     const response = await axios.put(
+//       `http://192.168.1.4:5000/api/banner/${currentBannerToEdit.value._id}`,
+//       formData,
+//       {
+//         headers: {
+//           'Content-Type': 'multipart/form-data',
+//           Authorization: `Bearer ${localStorage.getItem('token')}`,
+//         },
+//       },
+//     )
+
+//     console.log('Banner updated successfully:', response.data)
+//     await fetchBanners()
+//     closeEditBannerModal()
+//   } catch (error) {
+//     console.error('Error updating banner:', error)
+//   }
+// }
 
 // Open delete banner modal
 const openDeleteBannerModal = (banner) => {
@@ -627,11 +665,10 @@ const confirmDeleteBanner = async () => {
   if (bannerToDeleteId.value && bannerToDeleteId.value) {
     try {
       await axios.delete(
-        `http://192.168.1.4:5000/api/banner/${bannerToDeleteId.value}`,
+        `https://backend-owra.onrender.com/api/banner/${bannerToDeleteId.value}`,
         {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
-      }
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
       );
 
       console.log("Banner deleted successfully");
@@ -644,7 +681,6 @@ const confirmDeleteBanner = async () => {
     console.error("Banner ID is undefined or missing");
   }
 };
-
 
 onMounted(() => {
   fetchContent();
@@ -665,5 +701,3 @@ onBeforeUnmount(() => {
   border-radius: 4px;
 }
 </style>
-
-

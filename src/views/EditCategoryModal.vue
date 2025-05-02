@@ -97,7 +97,7 @@ const updateCategory = async () => {
     };
 
     const response = await axios.put(
-      `http://192.168.1.4:5000/api/categories/category/${props.category._id}`,
+      `https://backend-owra.onrender.com/api/categories/category/${props.category._id}`,
       payload,
       {
         headers: {

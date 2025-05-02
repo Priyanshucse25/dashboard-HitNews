@@ -56,21 +56,28 @@ const handleSignup = async () => {
 
   try {
     // Step 1: Sign up
-    await axios.post('http://192.168.1.4:5000/api/auth/signup', {
-      username: form.username,
-      password: form.password,
-    }, {
-      headers: { 'Content-Type': 'application/json' },
-    })
+    await axios.post(
+      'https://backend-owra.onrender.com/api/auth/signup',
+      {
+        username: form.username,
+        password: form.password,
+      },
+      {
+        headers: { 'Content-Type': 'application/json' },
+      },
+    )
 
     // Step 2: Auto-login (don't send token here)
-    const loginResponse = await axios.post('http://192.168.1.4:5000/api/auth/login', {
-      username: form.username,
-      password: form.password,
-    }, {
-      headers: { 'Content-Type': 'application/json' },
-      
-    })
+    const loginResponse = await axios.post(
+      'https://backend-owra.onrender.com/api/auth/login',
+      {
+        username: form.username,
+        password: form.password,
+      },
+      {
+        headers: { 'Content-Type': 'application/json' },
+      },
+    )
 
     // Step 3: Store token and user data
     const { token, user } = loginResponse.data
@@ -84,5 +91,4 @@ const handleSignup = async () => {
     alert(error.response?.data?.message || 'Something went wrong. Please try again.')
   }
 }
-
 </script>
