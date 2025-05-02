@@ -57,7 +57,7 @@ const handleSignup = async () => {
   try {
     // Step 1: Sign up
     await axios.post(
-      'https://backend-owra.onrender.com/api/auth/signup',
+      'https://backend-1-ctkv.onrender.com/api/auth/signup',
       {
         username: form.username,
         password: form.password,
@@ -69,7 +69,7 @@ const handleSignup = async () => {
 
     // Step 2: Auto-login (don't send token here)
     const loginResponse = await axios.post(
-      'https://backend-owra.onrender.com/api/auth/login',
+      'https://backend-1-ctkv.onrender.com/api/auth/login',
       {
         username: form.username,
         password: form.password,

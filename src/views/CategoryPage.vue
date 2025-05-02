@@ -380,7 +380,7 @@ const selectCategory = (cat) => {
 // Fetch content and banners
 const fetchContent = async () => {
   try {
-    const res = await axios.get("https://backend-owra.onrender.com/api/news", {
+    const res = await axios.get("https://backend-1-ctkv.onrender.com/api/news", {
       headers: {
         "Content-Type": "multipart/form-data",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -396,7 +396,7 @@ const fetchContent = async () => {
 const fetchBanners = async () => {
   try {
     const res = await axios.get(
-      "https://backend-owra.onrender.com/api/banner",
+      "https://backend-1-ctkv.onrender.com/api/banner",
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -438,14 +438,14 @@ const saveContent = async () => {
     if (editingIndex.value !== null) {
       const id = allContent.value[editingIndex.value]._id;
       const { data } = await axios.put(
-        `https://backend-owra.onrender.com/api/news/editnews/${id}`,
+        `https://backend-1-ctkv.onrender.com/api/news/editnews/${id}`,
         formData,
         config
       );
       allContent.value.splice(editingIndex.value, 1, data);
     } else {
       await axios.post(
-        "https://backend-owra.onrender.com/api/news",
+        "https://backend-1-ctkv.onrender.com/api/news",
         formData,
         config
       );
@@ -493,7 +493,7 @@ const deleteCard = (item) => {
 const confirmDelete = async () => {
   try {
     await axios.delete(
-      `https://backend-owra.onrender.com/api/news/deletenews/${indexToDelete.value}`,
+      `https://backend-1-ctkv.onrender.com/api/news/deletenews/${indexToDelete.value}`,
       {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       }
@@ -602,7 +602,7 @@ const saveBanner = async () => {
     formData.append("link", currentBannerToEdit.value.link);
 
     const response = await axios.put(
-      `https://backend-owra.onrender.com/api/banner/${currentBannerToEdit.value._id}`,
+      `https://backend-1-ctkv.onrender.com/api/banner/${currentBannerToEdit.value._id}`,
       formData,
       {
         headers: {
@@ -665,7 +665,7 @@ const confirmDeleteBanner = async () => {
   if (bannerToDeleteId.value && bannerToDeleteId.value) {
     try {
       await axios.delete(
-        `https://backend-owra.onrender.com/api/banner/${bannerToDeleteId.value}`,
+        `https://backend-1-ctkv.onrender.com/api/banner/${bannerToDeleteId.value}`,
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
