@@ -1,20 +1,21 @@
 <template>
-  <div class="p-6 h-full flex flex-col">
+    <div class="h-screen flex flex-col overflow-hidden">
+  <div class="p-4 sm:p-6 h-full flex flex-col">
     <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
-      <h2 class="text-2xl font-bold text-[#B48D3E]">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+      <h2 class="text-xl sm:text-2xl font-bold text-[#B48D3E]">
         Category: {{ categoryName }}
       </h2>
-      <div class="flex gap-2">
+      <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
         <button
           @click="showModal = true"
-          class="bg-[#B48D3E] text-white px-4 py-2 rounded hover:opacity-90"
+          class="bg-[#B48D3E] text-white px-4 py-2 rounded hover:opacity-90 w-full sm:w-auto"
         >
           Add Content
         </button>
         <button
           @click="toggleBanner"
-          class="bg-[#B48D3E] text-white px-4 py-2 rounded hover:opacity-90"
+          class="bg-[#B48D3E] text-white px-4 py-2 rounded hover:opacity-90 w-full sm:w-auto"
         >
           Banner
         </button>
@@ -26,7 +27,7 @@
       v-if="showBanners"
       class="bg-gray-100 p-4 rounded-lg mb-6 max-h-[500px] overflow-y-auto"
     >
-      <h3 class="text-xl font-bold text-[#B48D3E] mb-4">Banners</h3>
+      <h3 class="text-lg sm:text-xl font-bold text-[#B48D3E] mb-4">Banners</h3>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div
           v-for="(banner, index) in banners"
@@ -38,8 +39,7 @@
             alt="Banner"
             class="h-40 w-full object-cover rounded"
           />
-          <p class="mt-2 text-sm">{{ banner.link }}</p>
-
+          <p class="mt-2 text-sm break-words">{{ banner.link }}</p>
           <div class="flex gap-2 mt-2">
             <button
               @click="openEditBannerModal(banner)"
@@ -59,58 +59,41 @@
     </div>
 
     <!-- Cards Section -->
-    <div class="flex-1 overflow-y-auto p-4">
+    <div class="flex-1 overflow-y-auto">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div
           v-for="(item, index) in paginatedContent"
           :key="item._id"
           @click="toggleCard(item)"
           class="bg-white rounded-xl p-4 shadow text-[#B48D3E] cursor-pointer transition-all duration-300 ease-in-out"
-          :class="
-            selectedCardId === item._id
-              ? 'max-h-full'
-              : 'max-h-[400px] overflow-hidden'
-          "
+          :class="selectedCardId === item._id ? 'max-h-full' : 'max-h-[400px] overflow-hidden'"
         >
-          <div>
-            <h3
-              class="font-bold text-lg"
-              :class="selectedCardId === item._id ? '' : 'line-clamp-2'"
-            >
-              {{ item.title }}
-            </h3>
-
-            <img
-              :src="item.image"
-              alt="Content image"
-              class="h-40 w-full object-cover my-2 rounded"
-            />
-
-            <p
-              class="text-sm text-gray-600"
-              :class="selectedCardId === item._id ? '' : 'line-clamp-3'"
-              v-html="item.content"
-            ></p>
-          </div>
-
-          <div class="mt-2">
-            <div class="text-sm italic mb-2">
-              {{ item.category?.name || item.category || "No Category" }}
+          <h3 class="font-bold text-lg line-clamp-2">
+            {{ item.title }}
+          </h3>
+          <img
+            :src="item.image"
+            alt="Content image"
+            class="h-40 w-full object-cover my-2 rounded"
+          />
+          <p class="text-sm text-gray-600" v-html="item.content"
+             :class="selectedCardId === item._id ? '' : 'line-clamp-3'"></p>
+          <div class="mt-4 border-t pt-3 text-sm text-gray-700 space-y-1">
+            <div class="flex justify-between">
+              <span class="font-medium">Category:</span>
+              <span class="text-[#B48D3E] italic">
+                {{ item.category?.name || item.category || "No Category" }}
+              </span>
             </div>
-
-            <div class="flex justify-end gap-2">
-              <button
-                @click.stop="editCard(item)"
-                class="text-sm text-blue-500 hover:underline"
-              >
-                Edit
-              </button>
-              <button
-                @click.stop="deleteCard(item)"
-                class="text-sm text-red-500 hover:underline"
-              >
-                Delete
-              </button>
+            <div class="flex justify-between">
+              <span class="font-medium">Author:</span>
+              <span class="text-[#B48D3E] italic">
+                {{ item.author?.username || item.author || "No Author" }}
+              </span>
+            </div>
+            <div class="flex justify-end gap-2 mt-2">
+              <button @click.stop="editCard(item)" class="text-blue-500 hover:underline text-sm">Edit</button>
+              <button @click.stop="deleteCard(item)" class="text-red-500 hover:underline text-sm">Delete</button>
             </div>
           </div>
         </div>
@@ -118,7 +101,7 @@
     </div>
 
     <!-- Pagination -->
-    <div class="mt-4 flex justify-center gap-2">
+    <div class="mt-6 flex flex-wrap justify-center gap-2">
       <button
         @click="changePage(page - 1)"
         :disabled="page === 1"
@@ -134,7 +117,7 @@
           page === p
             ? 'bg-[#B48D3E] text-white'
             : 'text-[#B48D3E] border-[#B48D3E] hover:bg-[#B48D3E] hover:text-white',
-          'px-3 py-1 rounded border',
+          'px-3 py-1 rounded border'
         ]"
       >
         {{ p }}
@@ -148,29 +131,21 @@
       </button>
     </div>
 
+    <!-- Modals (Add/Edit Content, Edit Banner, Delete Confirmation) -->
     <!-- Add/Edit Content Modal -->
-    <div
-      v-if="showModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-auto"
-    >
-      <div
-        class="bg-white p-6 rounded-xl w-full max-w-lg max-h-[600px] text-[#B48D3E] relative overflow-auto"
-      >
+    <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-auto">
+      <div class="bg-white p-4 sm:p-6 rounded-xl w-full max-w-lg max-h-[90vh] text-[#B48D3E] relative overflow-y-auto">
         <h3 class="text-xl font-bold mb-4">
           {{ editingIndex !== null ? "Edit Content" : "Add Content" }}
         </h3>
 
         <label class="block mb-2">Title</label>
-        <input
-          v-model="form.title"
-          type="text"
-          class="w-full px-4 py-2 border rounded mb-4"
-        />
+        <input v-model="form.title" type="text" class="w-full px-4 py-2 border rounded mb-4" />
 
         <label class="block mb-2">Image</label>
         <input type="file" @change="handleImage" class="w-full mb-4" />
 
-        <label class="block mb-2 overflow-x-auto">Content</label>
+        <label class="block mb-2">Content</label>
         <QuillEditor
           v-model:content="form.content"
           contentType="html"
@@ -219,93 +194,58 @@
     </div>
 
     <!-- Edit Banner Modal -->
-    <div
-      v-if="isEditBannerModalVisible"
-      class="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center"
-    >
-      <div class="bg-white p-6 rounded-lg max-w-md w-full">
+    <div v-if="isEditBannerModalVisible" class="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white p-6 rounded-lg w-full max-w-md overflow-auto">
         <h3 class="text-xl font-bold text-[#B48D3E] mb-4">Edit Banner</h3>
-
-        <label for="image" class="block text-sm mb-1">Banner Image</label>
+        <label class="block text-sm mb-1">Banner Image</label>
         <input type="file" @change="handleFileChange" accept="image/*" />
-
-        <label for="link" class="block text-sm mb-1">Banner Link</label>
+        <label class="block text-sm mt-4 mb-1">Banner Link</label>
         <input
           v-model="currentBannerToEdit.link"
           type="text"
-          id="link"
           class="mb-4 p-2 border border-gray-300 rounded w-full"
         />
-
         <div class="flex justify-end space-x-2">
-          <button
-            @click="closeEditBannerModal"
-            class="bg-gray-400 text-white px-4 py-2 rounded"
-          >
+          <button @click="closeEditBannerModal" class="bg-gray-400 text-white px-4 py-2 rounded">
             Cancel
           </button>
-          <button
-            @click="saveBanner"
-            class="bg-[#B48D3E] text-white px-4 py-2 rounded"
-          >
+          <button @click="saveBanner" class="bg-[#B48D3E] text-white px-4 py-2 rounded">
             Save
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Delete Banner Confirmation Modal -->
-    <div
-      v-if="isDeleteBannerModalVisible"
-      class="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center"
-    >
-      <div class="bg-white p-6 rounded-lg max-w-md w-full">
+    <!-- Delete Confirmation Modals -->
+    <div v-if="isDeleteBannerModalVisible" class="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white p-6 rounded-lg w-full max-w-md">
         <h3 class="text-xl font-bold text-red-600 mb-4">Are you sure?</h3>
         <p class="mb-4">Do you want to delete this banner?</p>
-
-        <div class="flex justify-end space-x-2">
-          <button
-            @click="closeDeleteBannerModal"
-            class="bg-gray-400 text-white px-4 py-2 rounded"
-          >
-            Cancel
-          </button>
-          <button
-            @click="confirmDeleteBanner()"
-            class="bg-red-600 text-white px-4 py-2 rounded"
-          >
-            Delete
-          </button>
+        <div class="flex justify-end gap-2">
+          <button @click="closeDeleteBannerModal" class="bg-gray-400 text-white px-4 py-2 rounded">Cancel</button>
+          <button @click="confirmDeleteBanner" class="bg-red-600 text-white px-4 py-2 rounded">Delete</button>
         </div>
       </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
-    <div
-      v-if="showDeleteModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-    >
-      <div class="bg-white p-6 rounded-lg w-full max-w-md text-[#B48D3E]">
-        <h3 class="text-xl font-bold mb-4">Are you sure?</h3>
+    <div v-if="showDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white p-6 rounded-lg w-full max-w-md">
+        <h3 class="text-xl font-bold text-red-600 mb-4">Are you sure?</h3>
         <p class="mb-4">Do you want to delete this content?</p>
         <div class="flex justify-end gap-2">
-          <button
-            @click="cancelDelete"
-            class="px-4 py-2 border border-[#B48D3E] rounded text-[#B48D3E] hover:bg-[#B48D3E] hover:text-white"
-          >
+          <button @click="cancelDelete" class="px-4 py-2 border border-[#B48D3E] rounded text-[#B48D3E] hover:bg-[#B48D3E] hover:text-white">
             Cancel
           </button>
-          <button
-            @click="confirmDelete(banner)"
-            class="px-4 py-2 bg-red-600 text-white rounded hover:opacity-90"
-          >
+          <button @click="confirmDelete(banner)" class="px-4 py-2 bg-red-600 text-white rounded hover:opacity-90">
             Delete
           </button>
         </div>
       </div>
     </div>
   </div>
+</div>
 </template>
+
 
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
@@ -327,7 +267,13 @@ const showDeleteModal = ref(false);
 const showEditModal = ref(false);
 const indexToDelete = ref(null);
 const editingIndex = ref(null);
-const form = ref({ title: "", image: "", content: "", category: "" });
+const form = ref({
+  title: "",
+  image: "",
+  content: "",
+  category: "",
+  author: "",
+});
 const searchQuery = ref("");
 const showCategoryList = ref(false);
 const categoryDropdownRef = ref(null);
@@ -380,7 +326,7 @@ const selectCategory = (cat) => {
 // Fetch content and banners
 const fetchContent = async () => {
   try {
-    const res = await axios.get("https://backend-1-ctkv.onrender.com/api/news", {
+    const res = await axios.get("http://192.168.1.21:5000/api/news", {
       headers: {
         "Content-Type": "multipart/form-data",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -395,14 +341,11 @@ const fetchContent = async () => {
 
 const fetchBanners = async () => {
   try {
-    const res = await axios.get(
-      "https://backend-1-ctkv.onrender.com/api/banner",
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
+    const res = await axios.get("http://192.168.1.21:5000/api/banner", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
 
     banners.value = res.data.info || [];
     console.log(banners.value);
@@ -423,6 +366,7 @@ const saveContent = async () => {
     formData.append("title", form.value.title);
     formData.append("content", form.value.content);
     formData.append("category", form.value.category);
+    formData.append("author", form.value.author);
 
     if (form.value.image && typeof form.value.image !== "string") {
       formData.append("image", form.value.image);
@@ -438,17 +382,13 @@ const saveContent = async () => {
     if (editingIndex.value !== null) {
       const id = allContent.value[editingIndex.value]._id;
       const { data } = await axios.put(
-        `https://backend-1-ctkv.onrender.com/api/news/editnews/${id}`,
+        `http://192.168.1.21:5000/api/news/editnews/${id}`,
         formData,
         config
       );
       allContent.value.splice(editingIndex.value, 1, data);
     } else {
-      await axios.post(
-        "https://backend-1-ctkv.onrender.com/api/news",
-        formData,
-        config
-      );
+      await axios.post("http://192.168.1.21:5000/api/news", formData, config);
     }
     await fetchContent();
     resetForm();
@@ -480,6 +420,7 @@ const editCard = (item) => {
     image: item.image,
     content: item.content,
     category: item.category?.name || item.category || "",
+    author: item.author?.username || item.author || "",
   };
   searchQuery.value = form.value.category;
   showModal.value = true;
@@ -493,7 +434,7 @@ const deleteCard = (item) => {
 const confirmDelete = async () => {
   try {
     await axios.delete(
-      `https://backend-1-ctkv.onrender.com/api/news/deletenews/${indexToDelete.value}`,
+      `http://192.168.1.21:5000/api/news/deletenews/${indexToDelete.value}`,
       {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       }
@@ -518,7 +459,7 @@ const cancelEdit = () => resetForm();
 const resetForm = () => {
   showModal.value = false;
   editingIndex.value = null;
-  form.value = { title: "", image: "", content: "", category: "" };
+  form.value = { title: "", image: "", content: "", category: "", author: "" };
   searchQuery.value = "";
 };
 
@@ -602,7 +543,7 @@ const saveBanner = async () => {
     formData.append("link", currentBannerToEdit.value.link);
 
     const response = await axios.put(
-      `https://backend-1-ctkv.onrender.com/api/banner/${currentBannerToEdit.value._id}`,
+      `http://192.168.1.21:5000/api/banner/${currentBannerToEdit.value._id}`,
       formData,
       {
         headers: {
@@ -665,7 +606,7 @@ const confirmDeleteBanner = async () => {
   if (bannerToDeleteId.value && bannerToDeleteId.value) {
     try {
       await axios.delete(
-        `https://backend-1-ctkv.onrender.com/api/banner/${bannerToDeleteId.value}`,
+        `http://192.168.1.21:5000/api/banner/${bannerToDeleteId.value}`,
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }

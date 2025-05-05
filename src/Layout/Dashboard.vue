@@ -1,7 +1,7 @@
 <template>
   <div class="flex w-full sticky top-0 bg-[#F2F2F2] h-screen overflow-hidden">
     <Sidebar /> 
-    <div class="flex flex-col w-full">
+    <div class="flex flex-col h-full w-full">
       <Navbar />
       <RouterView/>
     </div>

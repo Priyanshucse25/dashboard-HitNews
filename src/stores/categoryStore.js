@@ -11,7 +11,7 @@ export const useCategoryStore = defineStore("category", () => {
   const getCategories = async () => {
     try {
       const response = await axios.get(
-        "https://backend-1-ctkv.onrender.com/api/categories",
+        "http://192.168.1.21:5000/api/categories",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -41,7 +41,7 @@ export const useCategoryStore = defineStore("category", () => {
   const getBanner = async () => {
     try {
       const response = await axios.get(
-        "https://backend-1-ctkv.onrender.com/api/banner",
+        "http://192.168.1.21:5000/api/banner",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,

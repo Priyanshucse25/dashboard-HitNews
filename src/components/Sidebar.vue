@@ -276,7 +276,7 @@ const updateLogo = async (event) => {
   formData.append("logo", file);
 
   try {
-    await axios.put("https://backend-1-ctkv.onrender.com/api/logo", formData, {
+    await axios.put("http://192.168.1.21:5000/api/logo", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -292,7 +292,7 @@ const updateLogo = async (event) => {
 const fetchLogo = async () => {
   try {
     const response = await axios.get(
-      "https://backend-1-ctkv.onrender.com/api/logo",
+      "http://192.168.1.21:5000/api/logo",
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -318,7 +318,7 @@ const deleteCategory = async (strategy) => {
     }
 
     await axios.delete(
-      `https://backend-1-ctkv.onrender.com/api/categories/category/${categoryId}`,
+      `http://192.168.1.21:5000/api/categories/category/${categoryId}`,
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -337,7 +337,7 @@ const deleteCategory = async (strategy) => {
 const fetchBanner = async () => {
   try {
     const response = await axios.get(
-      "https://backend-1-ctkv.onrender.com/api/banner",
+      "http://192.168.1.21:5000/api/banner",
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -365,7 +365,7 @@ const saveBanner = async () => {
   formData.append("link", bannerLink.value);
 
   try {
-    await axios.post("https://backend-1-ctkv.onrender.com/api/banner", formData, {
+    await axios.post("http://192.168.1.21:5000/api/banner", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
